@@ -92,59 +92,6 @@ class FlightUpdateDestroyRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = FlightSerializer
 
 
-# class Flight_Report_View(APIView):
-#     serializer_class = FlightSerializer
-#     permission_classes = [AllowAny]
-
-#     def get(self, request, format=None, *args, **kwargs):
-
-#         response = {
-#             'status': 1,
-#             'message': 'successfully retrived flights',
-#             'data': {},
-#         }
-
-#         Departure_datetime = request.query_params.get(
-#             'Departure_Flight_Time', None)
-#         Aparture_datetime = request.query_params.get(
-#             'Aparture_Flight_Time', None)
-#         print(Departure_datetime)
-#         print(Aparture_datetime)
-
-#         try:
-#             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-#             queryset = (
-#                 Flight.objects.select_related('Flight', 'Departure_airport').filter(Q(Departure_Flight_Time__gte=Departure_datetime) & Q(
-#                     Aparture_Flight_Time__lte=Aparture_datetime)).order_by('Departure_airport')
-#             )
-#         except ValueError:
-#             return Response(
-#                 'invalid parameters', status=status.HTTP_400_BAD_REQUEST
-#             )
-#         data = {}
-#         for flight in queryset:
-#             if not data.__contains__(flight.Departure_airport.ICAO_Code):
-#                 flight_time_for_each_aircraft = []
-#                 data[flight.Departure_airport.ICAO_Code] = {
-#                     'airport_name': flight.Departure_airport.Airport_Name,
-#                     'flights_count': 0,
-#                     'flight_time_for_each_aircraft': flight_time_for_each_aircraft,
-#                 }
-#             data[flight.Departure_airport.ICAO_Code]['flights_count'] += 1
-#             flight_time_for_each_aircraft.append(
-#                 {
-#                     'aircraft': AircraftSerializer(flight.Flight).data,
-#                     'flight_time': '{} minutes'.format(
-#                         (flight.Aparture_Flight_Time -
-#                          flight.Departure_Flight_Time).total_seconds()/60
-#                     ),
-#                 }
-#             )
-
-#         response['data'] = data
-#         return Response(response)
-
-
 class Flight_Report_View(APIView):
     serializer_class = FlightSerializer
     permission_classes = [AllowAny]
