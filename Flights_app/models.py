@@ -8,6 +8,7 @@ class Aircraft(models.Model):
     Aircraft_serialnumber = models.CharField(max_length=50, unique=True)
     Manufacturer = models.CharField(max_length=50)
 
+    is_active = models.BooleanField(default=True)
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -50,6 +51,7 @@ class Flight(models.Model):
     Departure_Flight_Time = models.DateTimeField()
     Aparture_Flight_Time = models.DateTimeField()
 
+    is_active = models.BooleanField(default=True)
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 

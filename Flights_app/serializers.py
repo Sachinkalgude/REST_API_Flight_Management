@@ -3,6 +3,8 @@ from django.utils import timezone
 # models.
 from .models import Cities, Airport, Flight, Aircraft
 from django.db.models import Q
+from django.db.models import F, Sum, Avg, Max
+from datetime import datetime, timedelta
 
 
 class AircraftSerializer(serializers.ModelSerializer):
@@ -22,6 +24,8 @@ class AircraftSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'data_exist': 'Entered Aircraft Details Already Exist.'
             })
+
+        return attrs
 
 
 class CitiesSerializer(serializers.ModelSerializer):
@@ -82,17 +86,51 @@ class FlightSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         Departure_Flight_Time = attrs.get('Departure_Flight_Time')
         Aparture_Flight_Time = attrs.get('Aparture_Flight_Time')
+        flight_ = attrs.get('Flight')
+        Flight_id = attrs.get('Flight_Id')
+        Departure_airport = attrs.get('Departure_airport')
+        Arrival_airport = attrs.get('Arrival_airport')
 
-        if Departure_Flight_Time < timezone.now():
-            raise serializers.ValidationError(
-                'depart time should be in the future.')
+        if Flight.objects.filter(Q(Flight=flight_) & Q(Flight_id=Flight_id)):
+            raise serializers.ValidationError({
+                'flight_assigned': 'This Flight already has been assigned.'
+            })
 
-        if Departure_Flight_Time >= Aparture_Flight_Time:
-            raise serializers.ValidationError(
-                'Aparture time should be after departure time.')
+        if not Departure_Flight_Time and not Aparture_Flight_Time:
+            pass
+        if Departure_Flight_Time and Aparture_Flight_Time:
+            if Departure_Flight_Time < timezone.now():
+                raise serializers.ValidationError(
+                    'depart time should be in the future.')
 
-        if Departure_Flight_Time == Aparture_Flight_Time:
-            raise serializers.ValidationError(
-                'Departure and Aparture should not be same.')
+            if Departure_Flight_Time >= Aparture_Flight_Time:
+                raise serializers.ValidationError(
+                    'Aparture time should be after departure time.')
+
+            if Departure_Flight_Time == Aparture_Flight_Time:
+                raise serializers.ValidationError(
+                    'Departure and Aparture should not be same.')
+
+        if Flight.objects.filter(Q(Flight=flight_)):
+            if not Departure_Flight_Time and not Aparture_Flight_Time:
+                pass
+            else:
+                aparture_time = Flight.objects.filter(Q(Flight=flight_) & Q(
+                    is_active=True)).aggregate(apartime=Max('Aparture_Flight_Time'))
+
+                Apartime = aparture_time['apartime'] + timedelta(minutes=20)
+
+                if Departure_Flight_Time < Apartime:
+                    raise serializers.ValidationError({
+                        "flight_time": "You should enter departure time after 20 Minutes's arrive time."
+                    })
+
+                dep_center = Flight.objects.filter(Q(Flight=flight_) & Q(
+                    Aparture_Flight_Time=aparture_time['apartime'])).values('Arrival_airport')
+
+                if int(Departure_airport.id) != dep_center[0]['Arrival_airport']:
+                    raise serializers.ValidationError({
+                        "flight_arrival": "This flight should be departure from arrival destination."
+                    })
 
         return attrs
