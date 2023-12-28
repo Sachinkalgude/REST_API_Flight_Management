@@ -117,8 +117,10 @@ class FlightSerializer(serializers.ModelSerializer):
             else:
                 aparture_time = Flight.objects.filter(Q(Flight=flight_) & Q(
                     is_active=True)).aggregate(apartime=Max('Aparture_Flight_Time'))
+                print(aparture_time)
 
                 Apartime = aparture_time['apartime'] + timedelta(minutes=20)
+                print(Apartime)
 
                 if Departure_Flight_Time < Apartime:
                     raise serializers.ValidationError({
@@ -127,6 +129,7 @@ class FlightSerializer(serializers.ModelSerializer):
 
                 dep_center = Flight.objects.filter(Q(Flight=flight_) & Q(
                     Aparture_Flight_Time=aparture_time['apartime'])).values('Arrival_airport')
+                print(dep_center)
 
                 if int(Departure_airport.id) != dep_center[0]['Arrival_airport']:
                     raise serializers.ValidationError({
